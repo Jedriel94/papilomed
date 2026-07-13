@@ -15,7 +15,7 @@
 
   async function cargar() {
     const q = filtro.value ? `?estatus=${filtro.value}` : '';
-    const items = await api.get('/api/solicitudes' + q);
+    const items = await api.get('solicitudes' + q);
     render(items);
   }
 
@@ -25,7 +25,7 @@
     const esAdmin = APP.user.role === 'admin';
 
     for (const s of items) {
-      const fecha = s.fecha_solicitada ? new Date(s.fecha_solicitada).toLocaleDateString('es-MX') : '—';
+      const fecha = s.fecha_solicitada ? new Date(s.fecha_solicitada + 'T00:00:00').toLocaleDateString('es-MX') : '—';
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>${s.id}</td>
@@ -64,7 +64,7 @@
     }
     sel.addEventListener('change', async () => {
       try {
-        await api.patch(`/api/solicitudes/${s.id}/estatus`, { estatus: sel.value });
+        await api.patch(`solicitudes/${s.id}/estatus`, { estatus: sel.value });
         cargar();
       } catch (err) { alert(err.message); }
     });
@@ -75,7 +75,7 @@
     btn.textContent = s.asignado_a ? 'Reasignarme' : 'Asignarme';
     btn.addEventListener('click', async () => {
       try {
-        await api.patch(`/api/solicitudes/${s.id}/asignarme`, {});
+        await api.patch(`solicitudes/${s.id}/asignarme`, {});
         cargar();
       } catch (err) { alert(err.message); }
     });
@@ -88,7 +88,7 @@
   async function cargarMedicosSelect() {
     if (!selMedico) return;
     try {
-      const medicos = await api.get('/api/medicos');
+      const medicos = await api.get('medicos');
       selMedico.innerHTML = '<option value="">— Sin médico —</option>';
       for (const m of medicos) {
         const opt = document.createElement('option');
@@ -114,7 +114,7 @@
         notas: document.getElementById('s_notas').value.trim(),
       };
       try {
-        await api.post('/api/solicitudes', payload);
+        await api.post('solicitudes', payload);
         form.reset();
         showMsg('Solicitud creada correctamente.', 'ok');
         cargar();

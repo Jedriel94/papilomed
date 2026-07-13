@@ -1,5 +1,9 @@
+# Configuración con credenciales reales (NO subir)
+api/config.php
+
+# Sistema
+.DS_Store
+
+# Node (versión anterior; ya no se usa, por si quedan restos)
 node_modules/
 .env
-.env.local
-npm-debug.log*
-.DS_Store

@@ -21,9 +21,9 @@ window.LABELS = {
 
 (async function initSession() {
   try {
-    APP.user = await api.get('/api/auth/me');
+    APP.user = await api.get('auth/me');
   } catch (_) {
-    location.href = '/'; // sin sesión → login
+    location.href = 'index.html'; // sin sesión → login
     return;
   }
 
@@ -46,6 +46,6 @@ window.LABELS = {
 })();
 
 document.getElementById('logoutBtn').addEventListener('click', async () => {
-  await api.post('/api/auth/logout');
-  location.href = '/';
+  await api.post('auth/logout');
+  location.href = 'index.html';
 });

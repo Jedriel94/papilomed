@@ -12,7 +12,7 @@
 
   async function cargar() {
     const q = filtro.value ? `?estatus=${filtro.value}` : '';
-    const items = await api.get('/api/medicos' + q);
+    const items = await api.get('medicos' + q);
     render(items);
   }
 
@@ -37,7 +37,7 @@
       btn.textContent = dejada ? 'Marcar pendiente' : 'Marcar muestra dejada';
       btn.addEventListener('click', async () => {
         try {
-          await api.patch(`/api/medicos/${m.id}/estatus`, {
+          await api.patch(`medicos/${m.id}/estatus`, {
             estatus: dejada ? 'pendiente' : 'muestra_dejada',
           });
           cargar();
@@ -59,7 +59,7 @@
       notas: document.getElementById('m_notas').value.trim(),
     };
     try {
-      await api.post('/api/medicos', payload);
+      await api.post('medicos', payload);
       form.reset();
       showMsg('Médico agregado correctamente.', 'ok');
       cargar();

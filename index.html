@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Botikit · Recolecciones</title>
-  <link rel="stylesheet" href="/css/styles.css" />
+  <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
   <div class="login-wrap">
@@ -30,10 +30,10 @@
     </div>
   </div>
 
-  <script src="/js/api.js"></script>
+  <script src="js/api.js"></script>
   <script>
     // Si ya hay sesión, ir directo al dashboard.
-    api.get('/api/auth/me').then(() => { location.href = '/dashboard.html'; }).catch(() => {});
+    api.get('auth/me').then(() => { location.href = 'dashboard.html'; }).catch(() => {});
 
     const form = document.getElementById('loginForm');
     const msg = document.getElementById('msg');
@@ -44,11 +44,11 @@
       msg.classList.add('hidden');
       btn.disabled = true;
       try {
-        await api.post('/api/auth/login', {
+        await api.post('auth/login', {
           email: document.getElementById('email').value,
           password: document.getElementById('password').value,
         });
-        location.href = '/dashboard.html';
+        location.href = 'dashboard.html';
       } catch (err) {
         msg.textContent = err.message || 'No se pudo iniciar sesión';
         msg.classList.remove('hidden');
