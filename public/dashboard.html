@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Botikit · Panel de Recolecciones</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+  <div class="topbar">
+    <div class="logo">Botikit<span>·</span>Recolecciones</div>
+    <div class="userbox">
+      <span id="userNombre"></span>
+      <span class="rol" id="userRol"></span>
+      <button class="btn ghost sm" id="logoutBtn" style="color:#fff;border-color:rgba(255,255,255,.4)">Salir</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="tabs">
+      <button class="tab active" data-panel="solicitudes">Solicitudes</button>
+      <button class="tab" data-panel="medicos">Médicos / Muestras</button>
+      <button class="tab" data-panel="info">Tarifas y horarios</button>
+    </div>
+
+    <!-- ============ SOLICITUDES ============ -->
+    <section class="panel active" id="panel-solicitudes">
+      <!-- Formulario solo para cliente -->
+      <div class="card" id="formSolicitudCard">
+        <h2>Nueva solicitud de recolección</h2>
+        <div id="msgSolicitud" class="msg hidden"></div>
+        <form id="formSolicitud">
+          <div class="form-grid">
+            <div>
+              <label>Hospital *</label>
+              <input id="s_hospital" required />
+            </div>
+            <div>
+              <label>Médico (opcional)</label>
+              <select id="s_medico"><option value="">— Sin médico —</option></select>
+            </div>
+            <div class="field-full">
+              <label>Dirección *</label>
+              <input id="s_direccion" required />
+            </div>
+            <div>
+              <label>Nombre de contacto</label>
+              <input id="s_contacto" />
+            </div>
+            <div>
+              <label>Teléfono de contacto</label>
+              <input id="s_telefono" />
+            </div>
+            <div>
+              <label>Fecha solicitada</label>
+              <input type="date" id="s_fecha" />
+            </div>
+            <div class="field-full">
+              <label>Notas</label>
+              <textarea id="s_notas"></textarea>
+            </div>
+          </div>
+          <div class="mt"><button class="btn naranja" type="submit">Crear solicitud</button></div>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="section-head">
+          <h2>Solicitudes</h2>
+          <div class="filtros">
+            <label style="margin:0">Estatus</label>
+            <select id="filtroSolicitud">
+              <option value="">Todos</option>
+              <option value="pendiente">Pendiente</option>
+              <option value="asignada">Asignada</option>
+              <option value="en_proceso">En proceso</option>
+              <option value="completada">Completada</option>
+              <option value="cancelada">Cancelada</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Hospital</th>
+                <th>Médico</th>
+                <th>Dirección</th>
+                <th>Contacto</th>
+                <th>Fecha</th>
+                <th class="col-cliente">Cliente</th>
+                <th>Estatus</th>
+                <th>Asignado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tbodySolicitudes"></tbody>
+          </table>
+        </div>
+        <div id="emptySolicitudes" class="empty hidden">No hay solicitudes.</div>
+      </div>
+    </section>
+
+    <!-- ============ MEDICOS ============ -->
+    <section class="panel" id="panel-medicos">
+      <div class="card">
+        <h2>Agregar médico / hospital</h2>
+        <div id="msgMedico" class="msg hidden"></div>
+        <form id="formMedico">
+          <div class="form-grid">
+            <div>
+              <label>Nombre del médico *</label>
+              <input id="m_nombre" required />
+            </div>
+            <div>
+              <label>Hospital *</label>
+              <input id="m_hospital" required />
+            </div>
+            <div>
+              <label>Dirección</label>
+              <input id="m_direccion" />
+            </div>
+            <div>
+              <label>Teléfono</label>
+              <input id="m_telefono" />
+            </div>
+            <div>
+              <label>Estatus</label>
+              <select id="m_estatus">
+                <option value="pendiente">Pendiente</option>
+                <option value="muestra_dejada">Muestra dejada</option>
+              </select>
+            </div>
+            <div class="field-full">
+              <label>Notas</label>
+              <textarea id="m_notas"></textarea>
+            </div>
+          </div>
+          <div class="mt"><button class="btn naranja" type="submit">Agregar médico</button></div>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="section-head">
+          <h2>Control de muestras</h2>
+          <div class="filtros">
+            <label style="margin:0">Estatus</label>
+            <select id="filtroMedico">
+              <option value="">Todos</option>
+              <option value="pendiente">Pendiente</option>
+              <option value="muestra_dejada">Muestra dejada</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Médico</th>
+                <th>Hospital</th>
+                <th>Dirección</th>
+                <th>Teléfono</th>
+                <th>Notas</th>
+                <th>Estatus</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyMedicos"></tbody>
+          </table>
+        </div>
+        <div id="emptyMedicos" class="empty hidden">No hay médicos registrados.</div>
+      </div>
+    </section>
+
+    <!-- ============ INFO / TARIFAS ============ -->
+    <section class="panel" id="panel-info">
+      <div class="info-grid">
+        <div class="info-box">
+          <h3>Tarifas por volumen</h3>
+          <div class="tarifa-row"><span>1 – 5 recolecciones</span><span class="precio">$350 MXN</span></div>
+          <div class="tarifa-row"><span>6 – 14 recolecciones</span><span class="precio">$320 MXN</span></div>
+          <div class="tarifa-row"><span>15 o más</span><span class="precio">Cotización especial</span></div>
+          <p class="muted mt">Precios con IVA incluido.</p>
+        </div>
+        <div class="info-box">
+          <h3>Horario de recolección</h3>
+          <p>Lunes a viernes<br /><b>11:00 am – 4:00 pm</b></p>
+        </div>
+        <div class="info-box">
+          <h3>Tiempos de atención</h3>
+          <p>Solicitudes <b>antes de las 2:00 pm</b> se atienden el <b>mismo día hábil</b>.</p>
+          <p>Después de las 2:00 pm, se atienden al <b>siguiente día hábil</b>.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/solicitudes.js"></script>
+  <script src="/js/medicos.js"></script>
+  <script>
+    // Navegación por pestañas.
+    document.querySelectorAll('.tab').forEach((tab) => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach((p) => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('panel-' + tab.dataset.panel).classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>
