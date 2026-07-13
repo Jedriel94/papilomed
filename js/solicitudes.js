@@ -46,37 +46,90 @@
     render(items);
   }
 
+  function fechaMX(f) {
+    return f ? new Date(f + 'T00:00:00').toLocaleDateString('es-MX') : '—';
+  }
+
   function render(items) {
     tbody.innerHTML = '';
     empty.classList.toggle('hidden', items.length > 0);
     const esAdmin = APP.user.role === 'admin';
 
     for (const s of items) {
-      const fecha = s.fecha_solicitada ? new Date(s.fecha_solicitada + 'T00:00:00').toLocaleDateString('es-MX') : '—';
+      // Fila resumen (siempre visible).
       const tr = document.createElement('tr');
+      tr.className = 'sol-row';
+      const tieneGuia = s.guia_rastreo || s.guia_archivo;
       tr.innerHTML = `
         <td>${s.id}</td>
         <td>${esc(s.hospital)}</td>
         <td>${esc(s.medico_nombre) || '—'}</td>
-        <td>${esc(s.direccion)}</td>
-        <td>${esc(s.contacto) || '—'}${s.telefono_contacto ? '<br><span class="muted">' + esc(s.telefono_contacto) + '</span>' : ''}</td>
-        <td>${fecha}</td>
-        <td class="col-cliente">${esc(s.cliente_nombre) || '—'}</td>
-        <td><span class="badge ${s.estatus}">${LABELS[s.estatus]}</span></td>
-        <td>${esc(s.asignado_nombre) || '—'}</td>
-        <td class="guia"></td>
-        <td class="acciones"></td>`;
+        <td>${fechaMX(s.fecha_solicitada)}</td>
+        <td>
+          <span class="badge ${s.estatus}">${LABELS[s.estatus]}</span>
+          ${tieneGuia ? '<span class="chip-guia">guía</span>' : ''}
+        </td>
+        <td class="caret">▸</td>`;
 
-      const acc = tr.querySelector('.acciones');
-      if (esAdmin) {
-        acc.appendChild(adminControls(s));
-      } else {
-        acc.innerHTML = '<span class="muted">—</span>';
-      }
-      tr.querySelector('.guia').appendChild(guiaCell(s, esAdmin));
-      if (APP.user.role === 'cliente') tr.querySelector('.col-cliente').classList.add('hidden');
+      // Fila detalle (oculta hasta hacer clic).
+      const trd = document.createElement('tr');
+      trd.className = 'sol-detail hidden';
+      const td = document.createElement('td');
+      td.colSpan = 6;
+      td.appendChild(detallePanel(s, esAdmin));
+      trd.appendChild(td);
+
+      tr.addEventListener('click', () => {
+        const oculto = trd.classList.toggle('hidden');
+        tr.querySelector('.caret').textContent = oculto ? '▸' : '▾';
+        tr.classList.toggle('abierta', !oculto);
+      });
+
       tbody.appendChild(tr);
+      tbody.appendChild(trd);
     }
+  }
+
+  // Panel de detalle que se muestra al expandir una solicitud.
+  function detallePanel(s, esAdmin) {
+    const wrap = document.createElement('div');
+    wrap.className = 'detalle';
+
+    const grid = document.createElement('div');
+    grid.className = 'detalle-grid';
+    const campos = [
+      ['Dirección', esc(s.direccion) || '—'],
+      ['Contacto', (esc(s.contacto) || '—') + (s.telefono_contacto ? ' · ' + esc(s.telefono_contacto) : '')],
+      ['Fecha solicitada', fechaMX(s.fecha_solicitada)],
+    ];
+    if (esAdmin) campos.push(['Cliente', esc(s.cliente_nombre) || '—']);
+    campos.push(['Asignado', esc(s.asignado_nombre) || '—']);
+    campos.push(['Notas', esc(s.notas) || '—']);
+    for (const [label, val] of campos) {
+      const d = document.createElement('div');
+      d.className = 'campo';
+      d.innerHTML = `<span class="campo-label">${label}</span><span class="campo-val">${val}</span>`;
+      grid.appendChild(d);
+    }
+    wrap.appendChild(grid);
+
+    // Sección de guía / rastreo.
+    const gsec = document.createElement('div');
+    gsec.className = 'detalle-seccion';
+    gsec.innerHTML = '<h4>Guía / Rastreo</h4>';
+    gsec.appendChild(guiaCell(s, esAdmin));
+    wrap.appendChild(gsec);
+
+    // Acciones de estatus/asignación (solo admin).
+    if (esAdmin) {
+      const asec = document.createElement('div');
+      asec.className = 'detalle-seccion';
+      asec.innerHTML = '<h4>Estatus / Asignación</h4>';
+      asec.appendChild(adminControls(s));
+      wrap.appendChild(asec);
+    }
+
+    return wrap;
   }
 
   function adminControls(s) {
@@ -139,6 +192,7 @@
     // --- Admin: captura de paquetería + número ---
     const selP = document.createElement('select');
     selP.className = 'sm';
+    selP.style.maxWidth = '200px';
     [''].concat(PAQUETERIAS).forEach((p) => {
       const o = document.createElement('option');
       o.value = p;
@@ -171,12 +225,24 @@
     fila1.append(selP, inpN, btnG);
     wrap.appendChild(fila1);
 
-    // --- Admin: subir archivo de la guía ---
+    // --- Admin: subir archivo de la guía (control limpio) ---
     const inpF = document.createElement('input');
     inpF.type = 'file';
     inpF.accept = '.pdf,.jpg,.jpeg,.png';
-    inpF.className = 'sm';
-    inpF.style.maxWidth = '160px';
+    inpF.id = 'guia-file-' + s.id;
+    inpF.className = 'file-hidden';
+
+    const lblF = document.createElement('label');
+    lblF.className = 'btn sm ghost';
+    lblF.setAttribute('for', inpF.id);
+    lblF.textContent = 'Elegir archivo…';
+
+    const nombreF = document.createElement('span');
+    nombreF.className = 'muted file-nombre';
+    nombreF.textContent = 'Ningún archivo';
+    inpF.addEventListener('change', () => {
+      nombreF.textContent = inpF.files && inpF.files[0] ? inpF.files[0].name : 'Ningún archivo';
+    });
 
     const btnF = document.createElement('button');
     btnF.className = 'btn sm naranja';
@@ -199,7 +265,7 @@
 
     const fila2 = document.createElement('div');
     fila2.className = 'row-actions mt';
-    fila2.append(inpF, btnF);
+    fila2.append(inpF, lblF, nombreF, btnF);
     wrap.appendChild(fila2);
 
     // --- Admin: enlaces existentes ---

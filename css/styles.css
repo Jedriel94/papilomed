@@ -177,6 +177,40 @@ tbody tr:hover { background: #fafbfe; }
 .filtros { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .filtros select { width: auto; min-width: 160px; }
 
+/* ---------- Filas expandibles (solicitudes) ---------- */
+.sol-row { cursor: pointer; }
+.sol-row:hover { background: #f4f7fc; }
+.sol-row.abierta { background: #eef3fb; }
+.sol-row .caret { text-align: right; color: var(--gris-texto); font-size: 12px; }
+.chip-guia {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  background: #e5edf9;
+  color: var(--azul);
+  vertical-align: middle;
+}
+.sol-detail > td { background: #f8fafd; padding: 0; border-bottom: 2px solid var(--gris-borde); }
+.detalle { padding: 16px 18px; }
+.detalle-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px 24px;
+  margin-bottom: 14px;
+}
+.campo { display: flex; flex-direction: column; }
+.campo-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--gris-texto); font-weight: 600; }
+.campo-val { font-size: 14px; }
+.detalle-seccion { border-top: 1px solid var(--gris-borde); padding-top: 12px; margin-top: 12px; }
+.detalle-seccion h4 { margin: 0 0 10px; font-size: 12px; color: var(--azul); text-transform: uppercase; letter-spacing: 0.4px; }
+
+/* Control de archivo limpio */
+.file-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+.file-nombre { align-self: center; }
+
 /* ---------- Referencia (tarifas/horarios) ---------- */
 .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
 .info-box { border: 1px solid var(--gris-borde); border-radius: var(--radius); padding: 16px; background: var(--blanco); }
