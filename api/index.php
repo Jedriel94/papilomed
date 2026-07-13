@@ -60,8 +60,11 @@ function dispatch($parts, $method)
         }
         $id = (int) $parts[1];
         $sub = $parts[2] ?? '';
-        if ($sub === 'estatus'   && $method === 'PATCH') solicitudes_estatus($id);
-        if ($sub === 'asignarme' && $method === 'PATCH') solicitudes_asignarme($id);
+        if ($sub === 'estatus'      && $method === 'PATCH') solicitudes_estatus($id);
+        if ($sub === 'asignarme'    && $method === 'PATCH') solicitudes_asignarme($id);
+        if ($sub === 'guia'         && $method === 'PATCH') solicitudes_guia($id);
+        if ($sub === 'guia-archivo' && $method === 'POST')  solicitudes_guia_archivo_subir($id);
+        if ($sub === 'guia-archivo' && $method === 'GET')   solicitudes_guia_archivo_ver($id);
         return;
     }
 }

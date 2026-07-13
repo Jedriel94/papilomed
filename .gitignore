@@ -1,6 +1,10 @@
 # Configuración con credenciales reales (NO subir)
 api/config.php
 
+# Archivos de guías subidos por los usuarios (se conserva solo la protección)
+uploads/*
+!uploads/.htaccess
+
 # Sistema
 .DS_Store
 

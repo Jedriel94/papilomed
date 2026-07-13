@@ -28,6 +28,7 @@
         <td>${esc(m.hospital)}</td>
         <td>${esc(m.direccion) || '—'}</td>
         <td>${esc(m.telefono) || '—'}</td>
+        <td>${m.muestras == null || m.muestras === '' ? '—' : esc(m.muestras)}</td>
         <td>${esc(m.notas) || '—'}</td>
         <td><span class="badge ${m.estatus}">${LABELS[m.estatus]}</span></td>
         <td class="acciones"></td>`;
@@ -55,6 +56,7 @@
       hospital: document.getElementById('m_hospital').value.trim(),
       direccion: document.getElementById('m_direccion').value.trim(),
       telefono: document.getElementById('m_telefono').value.trim(),
+      muestras: document.getElementById('m_muestras').value,
       estatus: document.getElementById('m_estatus').value,
       notas: document.getElementById('m_notas').value.trim(),
     };

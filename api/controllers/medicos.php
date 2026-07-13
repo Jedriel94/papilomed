@@ -3,6 +3,16 @@
 
 const MEDICO_ESTATUS = ['pendiente', 'muestra_dejada'];
 
+// Convierte el número de muestras a entero >= 0, o null si viene vacío.
+function normaliza_muestras($valor)
+{
+    if ($valor === null || $valor === '') {
+        return null;
+    }
+    $n = (int) $valor;
+    return $n < 0 ? 0 : $n;
+}
+
 function medico_por_id($id)
 {
     $stmt = db()->prepare('SELECT * FROM medicos WHERE id = ?');
@@ -33,16 +43,18 @@ function medicos_crear()
         send_json(['error' => 'nombre_medico y hospital son requeridos'], 400);
     }
     $estatus = in_array($b['estatus'] ?? '', MEDICO_ESTATUS, true) ? $b['estatus'] : 'pendiente';
+    $muestras = normaliza_muestras($b['muestras'] ?? null);
 
     $stmt = db()->prepare(
-        'INSERT INTO medicos (nombre_medico, hospital, direccion, telefono, notas, estatus, cliente_id)
-         VALUES (?, ?, ?, ?, ?, ?, ?)'
+        'INSERT INTO medicos (nombre_medico, hospital, direccion, telefono, muestras, notas, estatus, cliente_id)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
     );
     $stmt->execute([
         $nombre,
         $hospital,
         $b['direccion'] ?? null,
         $b['telefono'] ?? null,
+        $muestras,
         $b['notas'] ?? null,
         $estatus,
         $user['id'],
@@ -67,17 +79,18 @@ function medicos_actualizar($id)
         'hospital'      => $b['hospital']      ?? $actual['hospital'],
         'direccion'     => $b['direccion']     ?? $actual['direccion'],
         'telefono'      => $b['telefono']      ?? $actual['telefono'],
+        'muestras'      => array_key_exists('muestras', $b) ? normaliza_muestras($b['muestras']) : $actual['muestras'],
         'notas'         => $b['notas']         ?? $actual['notas'],
         'estatus'       => $b['estatus']       ?? $actual['estatus'],
     ];
 
     $stmt = db()->prepare(
-        'UPDATE medicos SET nombre_medico = ?, hospital = ?, direccion = ?, telefono = ?, notas = ?, estatus = ?
+        'UPDATE medicos SET nombre_medico = ?, hospital = ?, direccion = ?, telefono = ?, muestras = ?, notas = ?, estatus = ?
          WHERE id = ?'
     );
     $stmt->execute([
         $nuevo['nombre_medico'], $nuevo['hospital'], $nuevo['direccion'],
-        $nuevo['telefono'], $nuevo['notas'], $nuevo['estatus'], $id,
+        $nuevo['telefono'], $nuevo['muestras'], $nuevo['notas'], $nuevo['estatus'], $id,
     ]);
     send_json(medico_por_id($id));
 }

@@ -34,13 +34,14 @@ a { color: var(--azul); }
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--azul) 0%, var(--azul-oscuro) 100%);
+  background: var(--blanco);
   padding: 20px;
 }
 .login-card {
   background: var(--blanco);
+  border: 1px solid var(--gris-borde);
   border-radius: var(--radius);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--sombra);
   padding: 40px 36px;
   width: 100%;
   max-width: 380px;
