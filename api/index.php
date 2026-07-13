@@ -5,6 +5,7 @@ require __DIR__ . '/db.php';
 require __DIR__ . '/jwt.php';
 require __DIR__ . '/helpers.php';
 require __DIR__ . '/controllers/auth.php';
+require __DIR__ . '/controllers/users.php';
 require __DIR__ . '/controllers/medicos.php';
 require __DIR__ . '/controllers/solicitudes.php';
 
@@ -36,6 +37,19 @@ function dispatch($parts, $method)
         if ($a === 'login'  && $method === 'POST') auth_login();
         if ($a === 'logout' && $method === 'POST') auth_logout();
         if ($a === 'me'     && $method === 'GET')  auth_me();
+        return;
+    }
+
+    if ($r === 'users') {
+        if (!isset($parts[1])) {
+            if ($method === 'GET')  users_listar();
+            if ($method === 'POST') users_crear();
+            return;
+        }
+        $id = (int) $parts[1];
+        $sub = $parts[2] ?? '';
+        if ($sub === 'password' && $method === 'PATCH')  users_password($id);
+        if ($sub === ''         && $method === 'DELETE') users_eliminar($id);
         return;
     }
 

@@ -4,7 +4,7 @@ Sistema web para **solicitar y controlar recolecciones** de muestras médicas.
 Botikit (logística) recoge las muestras que Papilomed (laboratorio de VPH por PCR)
 deja en hospitales.
 
-- **Admin (Botikit):** ve todas las solicitudes, cambia su estatus, se las asigna y administra la lista de médicos/hospitales.
+- **Admin (Botikit):** ve todas las solicitudes, cambia su estatus, se las asigna, sube la guía de rastreo, administra la lista de médicos/hospitales y **crea/gestiona los usuarios** (admin y cliente) desde la pestaña *Usuarios*.
 - **Cliente (Papilomed):** crea solicitudes, ve el estatus de las suyas, y ve/agrega médicos marcándolos como *pendiente* / *muestra dejada*.
 
 Colores de marca: azul `#285098`, naranja `#D06828`.
@@ -103,6 +103,10 @@ Se muestran en la pestaña **Tarifas y horarios** (solo informativo):
 | POST | `api/auth/login` | público | Inicia sesión (cookie httpOnly) |
 | POST | `api/auth/logout` | auth | Cierra sesión |
 | GET | `api/auth/me` | auth | Usuario en sesión |
+| GET | `api/users` | admin | Lista de usuarios |
+| POST | `api/users` | admin | Crea usuario (email, password, role, nombre) |
+| PATCH | `api/users/:id/password` | admin | Restablece contraseña |
+| DELETE | `api/users/:id` | admin | Elimina usuario |
 | GET | `api/solicitudes` | admin/cliente | Lista (cliente ve solo las suyas) |
 | POST | `api/solicitudes` | cliente | Crea solicitud |
 | PATCH | `api/solicitudes/:id/estatus` | admin | Cambia estatus |

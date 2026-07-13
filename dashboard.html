@@ -20,6 +20,7 @@
     <div class="tabs">
       <button class="tab active" data-panel="solicitudes">Solicitudes</button>
       <button class="tab" data-panel="medicos">Médicos / Muestras</button>
+      <button class="tab solo-admin" data-panel="usuarios">Usuarios</button>
       <button class="tab" data-panel="info">Tarifas y horarios</button>
     </div>
 
@@ -175,6 +176,58 @@
       </div>
     </section>
 
+    <!-- ============ USUARIOS (solo admin) ============ -->
+    <section class="panel solo-admin" id="panel-usuarios">
+      <div class="card">
+        <h2>Crear usuario</h2>
+        <div id="msgUsuario" class="msg hidden"></div>
+        <form id="formUsuario">
+          <div class="form-grid">
+            <div>
+              <label>Nombre</label>
+              <input id="u_nombre" placeholder="Ej. Laboratorio Papilomed" />
+            </div>
+            <div>
+              <label>Correo *</label>
+              <input type="email" id="u_email" required />
+            </div>
+            <div>
+              <label>Contraseña *</label>
+              <input type="text" id="u_password" required placeholder="Mín. 6 caracteres" />
+            </div>
+            <div>
+              <label>Rol *</label>
+              <select id="u_role">
+                <option value="cliente">Cliente</option>
+                <option value="admin">Administrador</option>
+              </select>
+            </div>
+          </div>
+          <p class="muted mt">La contraseña se muestra en texto para que puedas compartirla con el usuario. Podrás cambiarla después.</p>
+          <div class="mt"><button class="btn naranja" type="submit">Crear usuario</button></div>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="section-head"><h2>Usuarios</h2></div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Correo</th>
+                <th>Rol</th>
+                <th>Creado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyUsuarios"></tbody>
+          </table>
+        </div>
+        <div id="emptyUsuarios" class="empty hidden">No hay usuarios.</div>
+      </div>
+    </section>
+
     <!-- ============ INFO / TARIFAS ============ -->
     <section class="panel" id="panel-info">
       <div class="info-grid">
@@ -202,6 +255,7 @@
   <script src="js/auth.js"></script>
   <script src="js/solicitudes.js"></script>
   <script src="js/medicos.js"></script>
+  <script src="js/users.js"></script>
   <script>
     // Navegación por pestañas.
     document.querySelectorAll('.tab').forEach((tab) => {

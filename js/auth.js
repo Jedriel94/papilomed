@@ -37,7 +37,8 @@ window.LABELS = {
     const card = document.getElementById('formSolicitudCard');
     if (card) card.classList.add('hidden');
   } else {
-    // El cliente no necesita ver la columna "Cliente".
+    // El cliente no ve las secciones exclusivas de admin (p. ej. Usuarios).
+    document.querySelectorAll('.solo-admin').forEach((el) => el.classList.add('hidden'));
     document.querySelectorAll('.col-cliente').forEach((el) => el.classList.add('hidden'));
   }
 

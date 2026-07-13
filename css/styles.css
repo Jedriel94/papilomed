@@ -173,6 +173,8 @@ tbody tr:hover { background: #fafbfe; }
 .badge.en_proceso    { background: #fff6d9; color: var(--warn); }
 .badge.completada    { background: #e3f5ea; color: var(--ok); }
 .badge.cancelada     { background: #fbe6e4; color: var(--danger); }
+.badge.rol-admin     { background: #e5edf9; color: var(--azul); }
+.badge.rol-cliente   { background: #fdf0e0; color: var(--naranja-oscuro); }
 
 .filtros { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .filtros select { width: auto; min-width: 160px; }
