@@ -33,16 +33,20 @@
         <form id="formSolicitud">
           <div class="form-grid">
             <div>
-              <label>Hospital *</label>
-              <input id="s_hospital" required />
+              <label>Hospital (filtro)</label>
+              <select id="s_hospital_filtro">
+                <option value="">— Todos los hospitales —</option>
+              </select>
             </div>
             <div>
-              <label>Médico (opcional)</label>
-              <select id="s_medico"><option value="">— Sin médico —</option></select>
+              <label>Médico *</label>
+              <select id="s_medico">
+                <option value="">— Elige un médico —</option>
+              </select>
             </div>
             <div class="field-full">
-              <label>Dirección *</label>
-              <input id="s_direccion" required />
+              <label>Dirección de recolección</label>
+              <input id="s_direccion_view" disabled placeholder="(se llena al elegir médico)" />
             </div>
             <div>
               <label>Nombre de contacto</label>
@@ -61,7 +65,46 @@
               <textarea id="s_notas"></textarea>
             </div>
           </div>
-          <div class="mt"><button class="btn naranja" type="submit">Crear solicitud</button></div>
+          <div class="mt">
+            <button class="btn naranja" type="submit">Crear solicitud</button>
+            <button class="btn ghost" type="button" id="s_nuevo_medico_btn">➕ Nuevo médico</button>
+          </div>
+
+          <!-- Alta rápida de médico sin salir del formulario -->
+          <div id="s_nuevo_medico" class="hidden mt" style="border-top:1px solid var(--gris-borde);padding-top:16px">
+            <h3 style="color:var(--azul)">Registrar médico nuevo</h3>
+            <div id="nm_msg" class="msg hidden"></div>
+            <div class="form-grid">
+              <div>
+                <label>Nombre del médico *</label>
+                <input id="nm_nombre" />
+              </div>
+              <div>
+                <label>Hospital *</label>
+                <select id="nm_hospital_sel">
+                  <option value="">— Elige un hospital —</option>
+                  <option value="__nuevo__">➕ Nuevo hospital…</option>
+                </select>
+              </div>
+              <div id="nm_hosp_nombre_wrap" class="hidden">
+                <label>Nombre del nuevo hospital *</label>
+                <input id="nm_hosp_nombre" />
+              </div>
+              <div id="nm_hosp_direccion_wrap" class="hidden field-full">
+                <label>Dirección del nuevo hospital *</label>
+                <input id="nm_hosp_direccion" />
+              </div>
+              <div>
+                <label>Ubicación (torre / piso / consultorio)</label>
+                <input id="nm_ubicacion" placeholder="Ej. Torre B, consultorio 504" />
+              </div>
+              <div>
+                <label>Muestras que deja</label>
+                <input type="number" id="nm_muestras" min="0" step="1" placeholder="Ej. 3" />
+              </div>
+            </div>
+            <div class="mt"><button class="btn" type="button" id="nm_guardar">Guardar médico</button></div>
+          </div>
         </form>
       </div>
 
@@ -103,7 +146,7 @@
     <!-- ============ MEDICOS ============ -->
     <section class="panel" id="panel-medicos">
       <div class="card">
-        <h2>Agregar médico / hospital</h2>
+        <h2>Agregar médico</h2>
         <div id="msgMedico" class="msg hidden"></div>
         <form id="formMedico">
           <div class="form-grid">
@@ -113,11 +156,26 @@
             </div>
             <div>
               <label>Hospital *</label>
-              <input id="m_hospital" required />
+              <select id="m_hospital_sel">
+                <option value="">— Elige un hospital —</option>
+                <option value="__nuevo__">➕ Nuevo hospital…</option>
+              </select>
+            </div>
+            <div id="m_hosp_dir_wrap">
+              <label>Dirección del hospital</label>
+              <input id="m_hosp_dir_view" disabled placeholder="(se llena al elegir)" />
+            </div>
+            <div id="m_hosp_nombre_wrap" class="hidden">
+              <label>Nombre del nuevo hospital *</label>
+              <input id="m_hosp_nombre" />
+            </div>
+            <div id="m_hosp_direccion_wrap" class="hidden field-full">
+              <label>Dirección del nuevo hospital *</label>
+              <input id="m_hosp_direccion" />
             </div>
             <div>
-              <label>Dirección</label>
-              <input id="m_direccion" />
+              <label>Ubicación (torre / piso / consultorio)</label>
+              <input id="m_ubicacion" placeholder="Ej. Torre B, consultorio 504" />
             </div>
             <div>
               <label>Teléfono</label>
@@ -161,7 +219,7 @@
               <tr>
                 <th>Médico</th>
                 <th>Hospital</th>
-                <th>Dirección</th>
+                <th>Ubicación</th>
                 <th>Teléfono</th>
                 <th>Muestras</th>
                 <th>Notas</th>

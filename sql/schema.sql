@@ -12,11 +12,25 @@ CREATE TABLE IF NOT EXISTS users (
   created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Hospitales: un lugar con su dirección de calle. Se da de alta una vez y se reutiliza.
+CREATE TABLE IF NOT EXISTS hospitales (
+  id         INT AUTO_INCREMENT PRIMARY KEY,
+  nombre     VARCHAR(255) NOT NULL,
+  direccion  VARCHAR(500) NOT NULL,
+  cliente_id INT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_hospitales_cliente FOREIGN KEY (cliente_id) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_hospitales_nombre (nombre)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS medicos (
   id            INT AUTO_INCREMENT PRIMARY KEY,
   nombre_medico VARCHAR(255) NOT NULL,
-  hospital      VARCHAR(255) NOT NULL,
-  direccion     VARCHAR(500) NULL,
+  hospital      VARCHAR(255) NOT NULL,          -- nombre del hospital (copia para mostrar)
+  hospital_id   INT NULL,                       -- referencia al hospital
+  ubicacion     VARCHAR(255) NULL,              -- torre / piso / consultorio dentro del hospital
+  direccion     VARCHAR(500) NULL,              -- heredado (la dirección real vive en hospitales)
   telefono      VARCHAR(50)  NULL,
   muestras      INT NULL,
   estatus       ENUM('pendiente','muestra_dejada') NOT NULL DEFAULT 'pendiente',
@@ -24,7 +38,8 @@ CREATE TABLE IF NOT EXISTS medicos (
   cliente_id    INT NULL,
   created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  CONSTRAINT fk_medicos_cliente FOREIGN KEY (cliente_id) REFERENCES users(id) ON DELETE SET NULL,
+  CONSTRAINT fk_medicos_cliente  FOREIGN KEY (cliente_id)  REFERENCES users(id)      ON DELETE SET NULL,
+  CONSTRAINT fk_medicos_hospital FOREIGN KEY (hospital_id) REFERENCES hospitales(id) ON DELETE SET NULL,
   INDEX idx_medicos_estatus (estatus)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

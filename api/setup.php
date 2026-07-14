@@ -37,6 +37,8 @@ try {
 
     // 1b) Migraciones idempotentes (agregan columnas si faltan en bases previas).
     ensure_column($pdo, 'medicos',     'muestras',     'INT NULL AFTER telefono');
+    ensure_column($pdo, 'medicos',     'hospital_id',  'INT NULL AFTER hospital');
+    ensure_column($pdo, 'medicos',     'ubicacion',    'VARCHAR(255) NULL AFTER hospital_id');
     ensure_column($pdo, 'solicitudes', 'paqueteria',   "VARCHAR(50) NULL AFTER estatus");
     ensure_column($pdo, 'solicitudes', 'guia_rastreo', "VARCHAR(100) NULL AFTER paqueteria");
     ensure_column($pdo, 'solicitudes', 'guia_archivo', "VARCHAR(255) NULL AFTER guia_rastreo");

@@ -4,12 +4,15 @@
   const filtro = document.getElementById('filtroSolicitud');
   const form = document.getElementById('formSolicitud');
   const msg = document.getElementById('msgSolicitud');
+
+  // Formulario de solicitud (solo cliente lo usa).
+  const filtroHosp = document.getElementById('s_hospital_filtro');
   const selMedico = document.getElementById('s_medico');
+  const dirView = document.getElementById('s_direccion_view');
 
   const ESTATUS_FLUJO = ['pendiente', 'asignada', 'en_proceso', 'completada', 'cancelada'];
   const PAQUETERIAS = ['DHL', 'FedEx', 'Estafeta', 'UPS', 'Redpack', 'Otro'];
 
-  // Plantillas de rastreo oficial por paquetería ({NUM} = número de guía).
   const RASTREO_URLS = {
     DHL: 'https://www.dhl.com/mx-es/home/rastreo.html?tracking-id={NUM}&submit=1',
     FedEx: 'https://www.fedex.com/fedextrack/?trknbr={NUM}',
@@ -56,7 +59,6 @@
     const esAdmin = APP.user.role === 'admin';
 
     for (const s of items) {
-      // Fila resumen (siempre visible).
       const tr = document.createElement('tr');
       tr.className = 'sol-row';
       const tieneGuia = s.guia_rastreo || s.guia_archivo;
@@ -71,7 +73,6 @@
         </td>
         <td class="caret">▸</td>`;
 
-      // Fila detalle (oculta hasta hacer clic).
       const trd = document.createElement('tr');
       trd.className = 'sol-detail hidden';
       const td = document.createElement('td');
@@ -90,7 +91,6 @@
     }
   }
 
-  // Panel de detalle que se muestra al expandir una solicitud.
   function detallePanel(s, esAdmin) {
     const wrap = document.createElement('div');
     wrap.className = 'detalle';
@@ -98,7 +98,7 @@
     const grid = document.createElement('div');
     grid.className = 'detalle-grid';
     const campos = [
-      ['Dirección', esc(s.direccion) || '—'],
+      ['Dirección de recolección', esc(s.direccion) || '—'],
       ['Contacto', (esc(s.contacto) || '—') + (s.telefono_contacto ? ' · ' + esc(s.telefono_contacto) : '')],
       ['Fecha solicitada', fechaMX(s.fecha_solicitada)],
     ];
@@ -113,14 +113,12 @@
     }
     wrap.appendChild(grid);
 
-    // Sección de guía / rastreo.
     const gsec = document.createElement('div');
     gsec.className = 'detalle-seccion';
     gsec.innerHTML = '<h4>Guía / Rastreo</h4>';
     gsec.appendChild(guiaCell(s, esAdmin));
     wrap.appendChild(gsec);
 
-    // Acciones de estatus/asignación (solo admin).
     if (esAdmin) {
       const asec = document.createElement('div');
       asec.className = 'detalle-seccion';
@@ -128,7 +126,6 @@
       asec.appendChild(adminControls(s));
       wrap.appendChild(asec);
     }
-
     return wrap;
   }
 
@@ -162,11 +159,9 @@
       } catch (err) { alert(err.message); }
     });
     wrap.appendChild(btn);
-
     return wrap;
   }
 
-  // Celda de guía/rastreo. El cliente solo ve; el admin captura y sube.
   function guiaCell(s, esAdmin) {
     const wrap = document.createElement('div');
     const url = rastreoUrl(s.paqueteria, s.guia_rastreo);
@@ -189,7 +184,6 @@
       return wrap;
     }
 
-    // --- Admin: captura de paquetería + número ---
     const selP = document.createElement('select');
     selP.className = 'sm';
     selP.style.maxWidth = '200px';
@@ -212,10 +206,7 @@
     btnG.textContent = 'Guardar';
     btnG.addEventListener('click', async () => {
       try {
-        await api.patch(`solicitudes/${s.id}/guia`, {
-          paqueteria: selP.value,
-          guia_rastreo: inpN.value.trim(),
-        });
+        await api.patch(`solicitudes/${s.id}/guia`, { paqueteria: selP.value, guia_rastreo: inpN.value.trim() });
         cargar();
       } catch (err) { alert(err.message); }
     });
@@ -225,7 +216,6 @@
     fila1.append(selP, inpN, btnG);
     wrap.appendChild(fila1);
 
-    // --- Admin: subir archivo de la guía (control limpio) ---
     const inpF = document.createElement('input');
     inpF.type = 'file';
     inpF.accept = '.pdf,.jpg,.jpeg,.png';
@@ -268,7 +258,6 @@
     fila2.append(inpF, lblF, nombreF, btnF);
     wrap.appendChild(fila2);
 
-    // --- Admin: enlaces existentes ---
     const fila3 = document.createElement('div');
     fila3.className = 'row-actions mt';
     if (url && s.guia_rastreo) fila3.appendChild(linkBtn(url, 'Rastrear'));
@@ -278,30 +267,77 @@
     return wrap;
   }
 
-  // Poblar el select de médicos en el formulario (solo cliente lo usa).
-  async function cargarMedicosSelect() {
-    if (!selMedico) return;
-    try {
-      const medicos = await api.get('medicos');
-      selMedico.innerHTML = '<option value="">— Sin médico —</option>';
-      for (const m of medicos) {
-        const opt = document.createElement('option');
-        opt.value = m.id;
-        opt.textContent = `${m.nombre_medico} · ${m.hospital}`;
-        selMedico.appendChild(opt);
-      }
-    } catch (_) { /* ignore */ }
+  // ==================== Formulario de nueva solicitud (cliente) ====================
+  let medicosCache = [];
+
+  function dirRecoleccion(m) {
+    let d = m.direccion || '';
+    if (m.ubicacion) d = (d ? d + ' · ' : '') + m.ubicacion;
+    return d;
   }
-  // Exponer para que el módulo de médicos refresque el select al agregar uno.
-  window.recargarMedicosSelect = cargarMedicosSelect;
+
+  function poblarHospitalFiltro() {
+    const prev = filtroHosp.value;
+    const vistos = new Set();
+    filtroHosp.innerHTML = '<option value="">— Todos los hospitales —</option>';
+    for (const m of medicosCache) {
+      const hid = m.hospital_id != null ? String(m.hospital_id) : '';
+      if (!hid || vistos.has(hid)) continue;
+      vistos.add(hid);
+      const o = document.createElement('option');
+      o.value = hid;
+      o.textContent = m.hospital;
+      filtroHosp.appendChild(o);
+    }
+    if (prev && vistos.has(prev)) filtroHosp.value = prev;
+  }
+
+  function poblarMedicoSelect() {
+    const pending = selMedico._pending;
+    const prev = pending || selMedico.value;
+    const hf = filtroHosp.value;
+    selMedico.innerHTML = '<option value="">— Elige un médico —</option>';
+    for (const m of medicosCache) {
+      if (hf && String(m.hospital_id) !== hf) continue;
+      const o = document.createElement('option');
+      o.value = String(m.id);
+      const partes = [m.nombre_medico, m.hospital || 'sin hospital'];
+      if (m.ubicacion) partes.push(m.ubicacion);
+      o.textContent = partes.join(' · ');
+      selMedico.appendChild(o);
+    }
+    const sigueValido = medicosCache.some(
+      (m) => String(m.id) === String(prev) && (!hf || String(m.hospital_id) === hf)
+    );
+    selMedico.value = sigueValido ? String(prev) : '';
+    if (pending) selMedico._pending = null;
+    actualizarDireccionView();
+  }
+
+  function actualizarDireccionView() {
+    const m = medicosCache.find((x) => String(x.id) === selMedico.value);
+    dirView.value = m ? dirRecoleccion(m) : '';
+  }
+
+  async function cargarMedicos() {
+    if (!APP.user || APP.user.role !== 'cliente') return;
+    try {
+      medicosCache = await api.get('medicos');
+    } catch (_) { medicosCache = []; }
+    poblarHospitalFiltro();
+    poblarMedicoSelect();
+  }
+
+  if (filtroHosp) filtroHosp.addEventListener('change', poblarMedicoSelect);
+  if (selMedico) selMedico.addEventListener('change', actualizarDireccionView);
 
   if (form) {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      const medico_id = selMedico.value;
+      if (!medico_id) { showMsg('Elige un médico para la solicitud.', 'error'); return; }
       const payload = {
-        hospital: document.getElementById('s_hospital').value.trim(),
-        medico_id: document.getElementById('s_medico').value || null,
-        direccion: document.getElementById('s_direccion').value.trim(),
+        medico_id,
         contacto: document.getElementById('s_contacto').value.trim(),
         telefono_contacto: document.getElementById('s_telefono').value.trim(),
         fecha_solicitada: document.getElementById('s_fecha').value || null,
@@ -309,7 +345,13 @@
       };
       try {
         await api.post('solicitudes', payload);
-        form.reset();
+        // Limpiar sin borrar los catálogos.
+        document.getElementById('s_contacto').value = '';
+        document.getElementById('s_telefono').value = '';
+        document.getElementById('s_fecha').value = '';
+        document.getElementById('s_notas').value = '';
+        filtroHosp.value = '';
+        poblarMedicoSelect();
         showMsg('Solicitud creada correctamente.', 'ok');
         cargar();
       } catch (err) {
@@ -318,10 +360,79 @@
     });
   }
 
+  // ---------- Alta rápida de médico dentro del formulario ----------
+  const nmWrap = document.getElementById('s_nuevo_medico');
+  const nmBtn = document.getElementById('s_nuevo_medico_btn');
+  const nmHospSel = document.getElementById('nm_hospital_sel');
+  const nmMsg = document.getElementById('nm_msg');
+  const nmHospNombreWrap = document.getElementById('nm_hosp_nombre_wrap');
+  const nmHospDirWrap = document.getElementById('nm_hosp_direccion_wrap');
+
+  if (nmBtn) {
+    nmBtn.addEventListener('click', () => nmWrap.classList.toggle('hidden'));
+  }
+  if (nmHospSel) {
+    nmHospSel.addEventListener('change', () => {
+      const nuevo = nmHospSel.value === '__nuevo__';
+      nmHospNombreWrap.classList.toggle('hidden', !nuevo);
+      nmHospDirWrap.classList.toggle('hidden', !nuevo);
+    });
+  }
+  const nmGuardar = document.getElementById('nm_guardar');
+  if (nmGuardar) {
+    nmGuardar.addEventListener('click', async () => {
+      const nombre = document.getElementById('nm_nombre').value.trim();
+      if (!nombre) { nmMsg.textContent = 'Escribe el nombre del médico.'; nmMsg.className = 'msg error'; return; }
+      const payload = {
+        nombre_medico: nombre,
+        ubicacion: document.getElementById('nm_ubicacion').value.trim(),
+        muestras: document.getElementById('nm_muestras').value,
+      };
+      const hv = nmHospSel.value;
+      if (hv === '__nuevo__') {
+        payload.hospital_nombre = document.getElementById('nm_hosp_nombre').value.trim();
+        payload.hospital_direccion = document.getElementById('nm_hosp_direccion').value.trim();
+        if (!payload.hospital_nombre || !payload.hospital_direccion) {
+          nmMsg.textContent = 'Escribe el nombre y la dirección del nuevo hospital.'; nmMsg.className = 'msg error'; return;
+        }
+      } else if (hv) {
+        payload.hospital_id = hv;
+      } else {
+        nmMsg.textContent = 'Elige un hospital (o agrega uno nuevo).'; nmMsg.className = 'msg error'; return;
+      }
+
+      try {
+        const nuevo = await api.post('medicos', payload);
+        await window.Hospitales.load();
+        // Limpiar la mini-forma y ocultarla.
+        ['nm_nombre', 'nm_ubicacion', 'nm_muestras', 'nm_hosp_nombre', 'nm_hosp_direccion'].forEach((id) => {
+          const el = document.getElementById(id); if (el) el.value = '';
+        });
+        nmHospSel.value = '';
+        nmHospNombreWrap.classList.add('hidden');
+        nmHospDirWrap.classList.add('hidden');
+        nmWrap.classList.add('hidden');
+        nmMsg.className = 'msg hidden';
+        // Recargar médicos y dejar seleccionado el nuevo.
+        filtroHosp.value = '';
+        selMedico._pending = String(nuevo.id);
+        document.dispatchEvent(new Event('medicos-cambio'));
+        showMsg('Médico creado y seleccionado.', 'ok');
+      } catch (err) {
+        nmMsg.textContent = err.message; nmMsg.className = 'msg error';
+      }
+    });
+  }
+
+  // ---------- Eventos ----------
   filtro.addEventListener('change', cargar);
+  document.addEventListener('hospitales-cargados', () => {
+    if (nmHospSel) window.Hospitales.fill(nmHospSel);
+  });
+  document.addEventListener('medicos-cambio', cargarMedicos);
 
   document.addEventListener('sesion-lista', () => {
     cargar();
-    if (APP.user.role === 'cliente') cargarMedicosSelect();
+    cargarMedicos();
   });
 })();

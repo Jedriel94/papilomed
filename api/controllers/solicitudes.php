@@ -58,18 +58,40 @@ function solicitudes_listar()
     send_json($stmt->fetchAll());
 }
 
-// Solo el cliente crea solicitudes.
+// Solo el cliente crea solicitudes. El médico es obligatorio; hospital y dirección
+// se arman a partir del médico (hospital + ubicación) y se CONGELAN en la solicitud.
 function solicitudes_crear()
 {
     $user = require_role('cliente');
     $b = json_body();
-    $hospital = trim($b['hospital'] ?? '');
-    $direccion = trim($b['direccion'] ?? '');
-    if ($hospital === '' || $direccion === '') {
-        send_json(['error' => 'hospital y direccion son requeridos'], 400);
-    }
 
     $medico_id = !empty($b['medico_id']) ? (int) $b['medico_id'] : null;
+    if (!$medico_id) {
+        send_json(['error' => 'Debes elegir un médico para la solicitud'], 400);
+    }
+
+    // Traer el médico con su hospital y dirección actuales.
+    $stmt = db()->prepare(
+        'SELECT m.nombre_medico, m.ubicacion, h.nombre AS hospital, h.direccion AS direccion
+         FROM medicos m
+         LEFT JOIN hospitales h ON h.id = m.hospital_id
+         WHERE m.id = ?'
+    );
+    $stmt->execute([$medico_id]);
+    $med = $stmt->fetch();
+    if (!$med) {
+        send_json(['error' => 'Médico no encontrado'], 404);
+    }
+
+    $hospital = trim((string) ($med['hospital'] ?? ''));
+    $direccion = trim((string) ($med['direccion'] ?? ''));
+    if ($med['ubicacion']) {
+        $direccion = trim($direccion . ' · ' . $med['ubicacion']);
+    }
+    if ($hospital === '' || $direccion === '') {
+        send_json(['error' => 'El médico no tiene hospital o dirección. Edítalo primero.'], 400);
+    }
+
     $fecha = !empty($b['fecha_solicitada']) ? $b['fecha_solicitada'] : null;
 
     $stmt = db()->prepare(
