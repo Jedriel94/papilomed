@@ -104,8 +104,9 @@ h1, h2, h3, h4 { letter-spacing: -0.01em; }
   top: 0;
   z-index: 20;
 }
-.topbar .logo { font-weight: 700; font-size: 17px; letter-spacing: -0.01em; color: var(--texto); }
-.topbar .logo span { color: var(--naranja); margin: 0 3px; }
+.topbar .logo { display: flex; align-items: center; gap: 9px; font-weight: 700; font-size: 17px; letter-spacing: -0.01em; color: var(--texto); }
+.topbar .logo-img { width: 28px; height: 28px; object-fit: contain; }
+.topbar .logo .logo-dot { color: var(--naranja); margin: 0 4px; }
 .topbar .userbox { display: flex; align-items: center; gap: 12px; font-size: 13.5px; color: var(--texto-2); }
 .topbar .rol {
   background: var(--azul-050);
@@ -351,3 +352,14 @@ tbody tr:last-child td { border-bottom: none; }
 .row-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .hidden { display: none !important; }
 .mt { margin-top: 16px; }
+
+/* ---------- Responsivo (pantallas chicas) ---------- */
+@media (max-width: 680px) {
+  .topbar { padding: 0 14px; }
+  .topbar .logo-text { display: none; }   /* en móvil se queda solo el icono */
+  .topbar #userNombre { display: none; }
+  .topbar .userbox { gap: 8px; }
+  .container { padding: 20px 14px 40px; }
+  .tabs { overflow-x: auto; }
+  .tab { white-space: nowrap; }
+}
