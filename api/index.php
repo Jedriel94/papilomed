@@ -35,9 +35,10 @@ function dispatch($parts, $method)
 
     if ($r === 'auth') {
         $a = $parts[1] ?? '';
-        if ($a === 'login'  && $method === 'POST') auth_login();
-        if ($a === 'logout' && $method === 'POST') auth_logout();
-        if ($a === 'me'     && $method === 'GET')  auth_me();
+        if ($a === 'login'  && $method === 'POST')  auth_login();
+        if ($a === 'logout' && $method === 'POST')  auth_logout();
+        if ($a === 'me'     && $method === 'GET')   auth_me();
+        if ($a === 'perfil' && $method === 'PATCH') auth_actualizar_perfil();
         return;
     }
 

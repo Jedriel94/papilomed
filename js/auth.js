@@ -50,3 +50,48 @@ document.getElementById('logoutBtn').addEventListener('click', async () => {
   await api.post('auth/logout');
   location.href = 'index.html';
 });
+
+// ---- Modal "Mi cuenta" (cambiar propio correo / contraseña) ----
+(function () {
+  const modal = document.getElementById('modalCuenta');
+  const btnAbrir = document.getElementById('miCuentaBtn');
+  const msg = document.getElementById('msgCuenta');
+  if (!modal || !btnAbrir) return;
+
+  function cerrar() { modal.classList.add('hidden'); }
+
+  btnAbrir.addEventListener('click', () => {
+    document.getElementById('c_email').value = APP.user ? APP.user.email : '';
+    document.getElementById('c_password').value = '';
+    document.getElementById('c_actual').value = '';
+    msg.className = 'msg hidden';
+    modal.classList.remove('hidden');
+  });
+
+  document.getElementById('c_cancelar').addEventListener('click', cerrar);
+  modal.addEventListener('click', (e) => { if (e.target === modal) cerrar(); });
+
+  document.getElementById('c_guardar').addEventListener('click', async () => {
+    const payload = {
+      email: document.getElementById('c_email').value.trim(),
+      password: document.getElementById('c_password').value,
+      password_actual: document.getElementById('c_actual').value,
+    };
+    if (!payload.password_actual) {
+      msg.textContent = 'Escribe tu contraseña actual para confirmar.';
+      msg.className = 'msg error';
+      return;
+    }
+    try {
+      const actualizado = await api.patch('auth/perfil', payload);
+      APP.user.email = actualizado.email;
+      document.getElementById('userNombre').textContent = APP.user.nombre || APP.user.email;
+      msg.textContent = 'Datos actualizados correctamente.';
+      msg.className = 'msg ok';
+      setTimeout(cerrar, 1200);
+    } catch (err) {
+      msg.textContent = err.message;
+      msg.className = 'msg error';
+    }
+  });
+})();

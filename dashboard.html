@@ -12,6 +12,7 @@
     <div class="userbox">
       <span id="userNombre"></span>
       <span class="rol" id="userRol"></span>
+      <button class="btn ghost sm" id="miCuentaBtn" style="color:#fff;border-color:rgba(255,255,255,.4)">Mi cuenta</button>
       <button class="btn ghost sm" id="logoutBtn" style="color:#fff;border-color:rgba(255,255,255,.4)">Salir</button>
     </div>
   </div>
@@ -307,6 +308,25 @@
         </div>
       </div>
     </section>
+  </div>
+
+  <!-- ============ MODAL: MI CUENTA ============ -->
+  <div id="modalCuenta" class="modal-overlay hidden">
+    <div class="modal">
+      <h2>Mi cuenta</h2>
+      <div id="msgCuenta" class="msg hidden"></div>
+      <label>Correo</label>
+      <input type="email" id="c_email" />
+      <label>Nueva contraseña</label>
+      <input type="text" id="c_password" placeholder="Déjala vacía para no cambiarla" />
+      <label>Contraseña actual *</label>
+      <input type="password" id="c_actual" placeholder="Para confirmar los cambios" />
+      <p class="muted mt">Confirma con tu contraseña actual para guardar cualquier cambio.</p>
+      <div class="modal-actions">
+        <button class="btn ghost" type="button" id="c_cancelar">Cancelar</button>
+        <button class="btn naranja" type="button" id="c_guardar">Guardar</button>
+      </div>
+    </div>
   </div>
 
   <script src="js/api.js"></script>
