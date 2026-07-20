@@ -159,6 +159,19 @@
       } catch (err) { alert(err.message); }
     });
     wrap.appendChild(btn);
+
+    const btnDel = document.createElement('button');
+    btnDel.className = 'btn ghost sm';
+    btnDel.style.color = 'var(--danger)';
+    btnDel.textContent = 'Eliminar';
+    btnDel.addEventListener('click', async () => {
+      if (!window.confirmarEliminacion(`la solicitud #${s.id}`)) return;
+      try {
+        await api.request('DELETE', `solicitudes/${s.id}`);
+        cargar();
+      } catch (err) { alert(err.message); }
+    });
+    wrap.appendChild(btnDel);
     return wrap;
   }
 

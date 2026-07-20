@@ -158,3 +158,16 @@ function medicos_estatus($id)
     $stmt->execute([$b['estatus'], $id]);
     send_json(medico_por_id($id));
 }
+
+// Eliminar un médico (SOLO admin). Las solicitudes que lo referencian conservan
+// su copia de hospital/dirección (medico_id queda en NULL por la FK).
+function medicos_eliminar($id)
+{
+    require_role('admin');
+    if (!medico_por_id($id)) {
+        send_json(['error' => 'Médico no encontrado'], 404);
+    }
+    $stmt = db()->prepare('DELETE FROM medicos WHERE id = ?');
+    $stmt->execute([$id]);
+    send_json(['ok' => true]);
+}

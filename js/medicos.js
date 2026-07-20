@@ -69,6 +69,9 @@
         <td><span class="badge ${m.estatus}">${LABELS[m.estatus]}</span></td>
         <td class="acciones"></td>`;
 
+      const acc = tr.querySelector('.acciones');
+      acc.classList.add('row-actions');
+
       const btn = document.createElement('button');
       btn.className = 'btn sm ' + (dejada ? 'ghost' : 'naranja');
       btn.textContent = dejada ? 'Marcar pendiente' : 'Marcar muestra dejada';
@@ -78,7 +81,25 @@
           cargar();
         } catch (err) { alert(err.message); }
       });
-      tr.querySelector('.acciones').appendChild(btn);
+      acc.appendChild(btn);
+
+      // Eliminar (solo admin).
+      if (APP.user.role === 'admin') {
+        const btnDel = document.createElement('button');
+        btnDel.className = 'btn ghost sm';
+        btnDel.style.color = 'var(--danger)';
+        btnDel.textContent = 'Eliminar';
+        btnDel.addEventListener('click', async () => {
+          if (!window.confirmarEliminacion(`al médico "${m.nombre_medico}"`)) return;
+          try {
+            await api.request('DELETE', `medicos/${m.id}`);
+            document.dispatchEvent(new Event('medicos-cambio'));
+            cargar();
+          } catch (err) { alert(err.message); }
+        });
+        acc.appendChild(btnDel);
+      }
+
       tbody.appendChild(tr);
     }
   }

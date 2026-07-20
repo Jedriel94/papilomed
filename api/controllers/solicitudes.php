@@ -145,6 +145,25 @@ function solicitudes_asignarme($id)
     send_json(solicitud_por_id($id));
 }
 
+// Solo admin: elimina una solicitud (y su archivo de guía si tiene).
+function solicitudes_eliminar($id)
+{
+    require_role('admin');
+    $sol = solicitud_por_id($id);
+    if (!$sol) {
+        send_json(['error' => 'Solicitud no encontrada'], 404);
+    }
+    if (!empty($sol['guia_archivo'])) {
+        $ruta = __DIR__ . '/../../uploads/' . basename($sol['guia_archivo']);
+        if (is_file($ruta)) {
+            @unlink($ruta);
+        }
+    }
+    $stmt = db()->prepare('DELETE FROM solicitudes WHERE id = ?');
+    $stmt->execute([$id]);
+    send_json(['ok' => true]);
+}
+
 // Solo admin: registra/actualiza el número de guía y la paquetería.
 function solicitudes_guia($id)
 {

@@ -74,8 +74,9 @@ function dispatch($parts, $method)
         }
         $id = (int) $parts[1];
         $sub = $parts[2] ?? '';
-        if ($sub === ''        && $method === 'PUT')   medicos_actualizar($id);
-        if ($sub === 'estatus' && $method === 'PATCH') medicos_estatus($id);
+        if ($sub === ''        && $method === 'PUT')    medicos_actualizar($id);
+        if ($sub === ''        && $method === 'DELETE') medicos_eliminar($id);
+        if ($sub === 'estatus' && $method === 'PATCH')  medicos_estatus($id);
         return;
     }
 
@@ -87,6 +88,7 @@ function dispatch($parts, $method)
         }
         $id = (int) $parts[1];
         $sub = $parts[2] ?? '';
+        if ($sub === ''             && $method === 'DELETE') solicitudes_eliminar($id);
         if ($sub === 'estatus'      && $method === 'PATCH') solicitudes_estatus($id);
         if ($sub === 'asignarme'    && $method === 'PATCH') solicitudes_asignarme($id);
         if ($sub === 'guia'         && $method === 'PATCH') solicitudes_guia($id);

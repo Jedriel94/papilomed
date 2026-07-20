@@ -9,6 +9,18 @@ window.esc = (v) =>
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 
+// Confirmación de eliminación con doble seguro: confirma y luego pide escribir "eliminar".
+window.confirmarEliminacion = function (queEs) {
+  if (!confirm(`¿Seguro que deseas eliminar ${queEs}?\n\nEsta acción NO se puede deshacer.`)) return false;
+  const r = prompt('Para confirmar, escribe la palabra:  eliminar');
+  if (r === null) return false;
+  if (r.trim().toLowerCase() !== 'eliminar') {
+    alert('No se eliminó. Debes escribir exactamente la palabra "eliminar".');
+    return false;
+  }
+  return true;
+};
+
 // Etiquetas legibles para los estatus.
 window.LABELS = {
   pendiente: 'Pendiente',
