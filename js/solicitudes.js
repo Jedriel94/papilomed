@@ -58,31 +58,48 @@
     empty.classList.toggle('hidden', items.length > 0);
     const esAdmin = APP.user.role === 'admin';
 
-    for (const s of items) {
+    for (const item of items) {
+      let s = item;
+
       const tr = document.createElement('tr');
       tr.className = 'sol-row';
-      const tieneGuia = s.guia_rastreo || s.guia_archivo;
-      tr.innerHTML = `
-        <td>${s.id}</td>
-        <td>${esc(s.hospital)}</td>
-        <td>${esc(s.medico_nombre) || '—'}</td>
-        <td>${fechaMX(s.fecha_solicitada)}</td>
-        <td>
-          <span class="badge ${s.estatus}">${LABELS[s.estatus]}</span>
-          ${tieneGuia ? '<span class="chip-guia">guía</span>' : ''}
-        </td>
-        <td class="caret">▸</td>`;
+      const cId = document.createElement('td'); cId.textContent = s.id;
+      const cHosp = document.createElement('td'); cHosp.textContent = s.hospital || '';
+      const cMed = document.createElement('td'); cMed.textContent = s.medico_nombre || '—';
+      const cFecha = document.createElement('td'); cFecha.textContent = fechaMX(s.fecha_solicitada);
+      const cEstatus = document.createElement('td');
+      const cCaret = document.createElement('td'); cCaret.className = 'caret'; cCaret.textContent = '▸';
+      tr.append(cId, cHosp, cMed, cFecha, cEstatus, cCaret);
 
       const trd = document.createElement('tr');
       trd.className = 'sol-detail hidden';
       const td = document.createElement('td');
       td.colSpan = 6;
-      td.appendChild(detallePanel(s, esAdmin));
       trd.appendChild(td);
+
+      function pintarEstatus() {
+        const tieneGuia = s.guia_rastreo || s.guia_archivo;
+        cEstatus.innerHTML =
+          `<span class="badge ${s.estatus}">${LABELS[s.estatus]}</span>` +
+          (tieneGuia ? ' <span class="chip-guia">guía</span>' : '');
+      }
+      function pintarDetalle() {
+        td.innerHTML = '';
+        td.appendChild(detallePanel(s, esAdmin, refrescar));
+      }
+      // Actualiza la fila EN SU LUGAR (sin cerrar el detalle) tras una acción.
+      function refrescar(nuevo) {
+        if (nuevo) s = nuevo;
+        pintarEstatus();
+        pintarDetalle();
+      }
+
+      pintarEstatus();
+      pintarDetalle();
 
       tr.addEventListener('click', () => {
         const oculto = trd.classList.toggle('hidden');
-        tr.querySelector('.caret').textContent = oculto ? '▸' : '▾';
+        cCaret.textContent = oculto ? '▸' : '▾';
         tr.classList.toggle('abierta', !oculto);
       });
 
@@ -91,7 +108,7 @@
     }
   }
 
-  function detallePanel(s, esAdmin) {
+  function detallePanel(s, esAdmin, refrescar) {
     const wrap = document.createElement('div');
     wrap.className = 'detalle';
 
@@ -116,20 +133,20 @@
     const gsec = document.createElement('div');
     gsec.className = 'detalle-seccion';
     gsec.innerHTML = '<h4>Guía / Rastreo</h4>';
-    gsec.appendChild(guiaCell(s, esAdmin));
+    gsec.appendChild(guiaCell(s, esAdmin, refrescar));
     wrap.appendChild(gsec);
 
     if (esAdmin) {
       const asec = document.createElement('div');
       asec.className = 'detalle-seccion';
       asec.innerHTML = '<h4>Estatus / Asignación</h4>';
-      asec.appendChild(adminControls(s));
+      asec.appendChild(adminControls(s, refrescar));
       wrap.appendChild(asec);
     }
     return wrap;
   }
 
-  function adminControls(s) {
+  function adminControls(s, refrescar) {
     const wrap = document.createElement('div');
     wrap.className = 'row-actions';
 
@@ -143,8 +160,8 @@
     }
     sel.addEventListener('change', async () => {
       try {
-        await api.patch(`solicitudes/${s.id}/estatus`, { estatus: sel.value });
-        cargar();
+        const r = await api.patch(`solicitudes/${s.id}/estatus`, { estatus: sel.value });
+        refrescar(r);
       } catch (err) { alert(err.message); }
     });
     wrap.appendChild(sel);
@@ -154,8 +171,8 @@
     btn.textContent = s.asignado_a ? 'Reasignarme' : 'Asignarme';
     btn.addEventListener('click', async () => {
       try {
-        await api.patch(`solicitudes/${s.id}/asignarme`, {});
-        cargar();
+        const r = await api.patch(`solicitudes/${s.id}/asignarme`, {});
+        refrescar(r);
       } catch (err) { alert(err.message); }
     });
     wrap.appendChild(btn);
@@ -175,7 +192,7 @@
     return wrap;
   }
 
-  function guiaCell(s, esAdmin) {
+  function guiaCell(s, esAdmin, refrescar) {
     const wrap = document.createElement('div');
     const url = rastreoUrl(s.paqueteria, s.guia_rastreo);
 
@@ -219,8 +236,8 @@
     btnG.textContent = 'Guardar';
     btnG.addEventListener('click', async () => {
       try {
-        await api.patch(`solicitudes/${s.id}/guia`, { paqueteria: selP.value, guia_rastreo: inpN.value.trim() });
-        cargar();
+        const r = await api.patch(`solicitudes/${s.id}/guia`, { paqueteria: selP.value, guia_rastreo: inpN.value.trim() });
+        refrescar(r);
       } catch (err) { alert(err.message); }
     });
 
@@ -259,7 +276,7 @@
         const res = await fetch(archivoUrl(s.id), { method: 'POST', credentials: 'same-origin', body: fd });
         const data = await res.json().catch(() => null);
         if (!res.ok) throw new Error((data && data.error) || ('Error ' + res.status));
-        cargar();
+        refrescar(data);
       } catch (err) {
         alert(err.message);
         btnF.disabled = false;
